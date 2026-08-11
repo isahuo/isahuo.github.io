@@ -51,8 +51,9 @@ const statusLabels = {
   title={topic.data.title}
   description={topic.data.description}
 >
-  <section class="card-base px-6 md:px-8 py-6 mb-4">
-    <div class="flex items-start gap-4">
+  <!-- 专题是一张完整的“大纸张”，简介和文章都承载在同一底座上 -->
+  <section class="topic-paper card-base px-5 md:px-7 py-6 md:py-7 mb-4">
+    <header class="flex items-start gap-4">
       <div class="shrink-0 w-11 h-11 rounded-lg bg-(--btn-regular-bg) text-(--primary) flex items-center justify-center mt-0.5">
         <Icon is:inline name="material-symbols:deployed-code-outline-rounded" class="text-2xl" />
       </div>
@@ -82,24 +83,36 @@ const statusLabels = {
           </span>
         </div>
       </div>
+    </header>
+
+    <div class="border-(--line-divider) border-dashed border-t mt-6 pt-5">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-xl font-bold text-90 inline-flex items-center gap-2">
+          <Icon is:inline name="material-symbols:grid-view-rounded" class="text-(--primary)" />
+          专题文章
+        </h2>
+        {topicPosts.length > 0 && <span class="text-sm text-30">按专题顺序排列</span>}
+      </div>
+
+      {topicPosts.length > 0 ? (
+        <PostPage page={{ data: topicPosts }} fixedLayout="grid" />
+      ) : (
+        <div class="px-8 py-12 text-center rounded-xl border border-(--line-divider)">
+          <Icon is:inline name="material-symbols:post-add-rounded" class="text-5xl text-30 mx-auto mb-4" />
+          <p class="font-bold text-75 mb-2">专题内容正在整理</p>
+          <p class="text-sm text-50">为文章填写该专题 ID 后，它会自动出现在这里。</p>
+        </div>
+      )}
     </div>
   </section>
-
-  <div class="flex items-center justify-between gap-3 mb-3 px-1">
-    <h2 class="text-xl font-bold text-90 inline-flex items-center gap-2">
-      <Icon is:inline name="material-symbols:grid-view-rounded" class="text-(--primary)" />
-      专题文章
-    </h2>
-    {topicPosts.length > 0 && <span class="text-sm text-30">按专题顺序排列</span>}
-  </div>
-
-  {topicPosts.length > 0 ? (
-    <PostPage page={{ data: topicPosts }} fixedLayout="grid" />
-  ) : (
-    <section class="card-base px-8 py-12 text-center mb-4">
-      <Icon is:inline name="material-symbols:post-add-rounded" class="text-5xl text-30 mx-auto mb-4" />
-      <p class="font-bold text-75 mb-2">专题内容正在整理</p>
-      <p class="text-sm text-50">为文章填写该专题 ID 后，它会自动出现在这里。</p>
-    </section>
-  )}
 </MainGridLayout>
+
+<style>
+  .topic-paper :global(#post-list-container) {
+    margin-bottom: 0;
+  }
+
+  .topic-paper :global(.post-card-wrapper) {
+    border-color: color-mix(in oklch, var(--line-divider) 85%, transparent);
+  }
+</style>

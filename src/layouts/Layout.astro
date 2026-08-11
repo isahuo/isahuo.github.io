@@ -599,6 +599,9 @@ const siteLang = lang.replace("_", "-");
     <script is:inline define:vars={{
       defaultBorder: siteConfig.card?.border ?? false,
       defaultFollowTheme: siteConfig.card?.followTheme ?? false,
+      followThemeSwitchable:
+        displaySettingsConfig.enable &&
+        displaySettingsConfig.cardFollowThemeSwitchable,
     }}>
       (function() {
         var stored = localStorage.getItem("cardBorderEnabled");
@@ -607,7 +610,9 @@ const siteLang = lang.replace("_", "-");
         else document.documentElement.classList.remove("enable-card-border");
 
         stored = localStorage.getItem("cardFollowThemeEnabled");
-        var follow = stored !== null ? stored === "true" : defaultFollowTheme;
+        var follow = followThemeSwitchable && stored !== null
+          ? stored === "true"
+          : defaultFollowTheme;
         if (follow) document.body.classList.add("card-follow-theme-hue");
         else document.body.classList.remove("card-follow-theme-hue");
       })();

@@ -34,8 +34,8 @@ export const displaySettingsConfig: DisplaySettingsConfig =
 		// 卡片边框和阴影开关
 		cardBorderSwitchable: true,
 
-		// 卡片风格跟随主题色开关
-		cardFollowThemeSwitchable: true,
+		// 卡片固定为中性色，不允许切换为主题色卡片
+		cardFollowThemeSwitchable: false,
 
 		// ── 壁纸 (Wallpaper) ──────────────────────────────────
 
