@@ -338,12 +338,13 @@ const minutes = remarkPluginFrontmatter.minutes;
     gap: 0.25rem !important;
   }
 
+  /* 列表模式无封面时不显示右侧箭头，也不再为它预留宽度 */
   :global(.list-mode) .no-cover .post-card-content {
-    width: calc(100% - 52px - 12px) !important;
+    width: 100% !important;
   }
 
   :global(.list-mode) .post-card-enter-btn {
-    display: flex !important;
+    display: none !important;
   }
 
   /* 移动端列表模式 - 隐藏tags，只在有空间时显示 */
@@ -410,11 +411,12 @@ const minutes = remarkPluginFrontmatter.minutes;
     }
 
     :global(.list-mode) .no-cover .post-card-content {
-      width: calc(100% - 52px - 12px) !important;
+      width: 100% !important;
+      padding-right: 2.25rem !important;
     }
 
     :global(.list-mode) .post-card-enter-btn {
-      display: flex !important;
+      display: none !important;
     }
   }
 
