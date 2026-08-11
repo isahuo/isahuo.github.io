@@ -1,25 +1,12 @@
 ---
 import { getCollection } from "astro:content";
 import { Icon } from "astro-icon/components";
-import ImageWrapper from "@/components/common/ImageWrapper.astro";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@/utils/content-utils";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
-import { getFileDirFromPath } from "@/utils/url-utils";
 
 const allTopics = await getCollection("topics", ({ data }) => !data.draft);
 const allPosts = await getSortedPosts();
-
-const statusLabels = {
-	planned: "计划中",
-	ongoing: "进行中",
-	completed: "已完成",
-} as const;
-
-const kindLabels = {
-	series: "系列",
-	project: "项目",
-} as const;
 
 const topics = allTopics
 	.map((topic) => {
@@ -27,7 +14,10 @@ const topics = allTopics
 			post.data.topics.includes(topic.id),
 		);
 		const latestDate =
-			posts[0]?.data.published || topic.data.updated || topic.data.published;
+			posts[0]?.data.updated ||
+			posts[0]?.data.published ||
+			topic.data.updated ||
+			topic.data.published;
 		return { topic, posts, latestDate };
 	})
 	.sort(
@@ -38,18 +28,18 @@ const topics = allTopics
 ---
 
 <MainGridLayout
-  title="专题"
-  description="围绕系列文章与项目整理的主题内容"
+  title="专题文章"
+  description="围绕长期关注的方向组织系列文章与项目内容"
 >
   <section class="card-base px-6 md:px-8 py-6 mb-4">
-    <div class="flex items-center gap-3 mb-2">
-      <div class="w-10 h-10 rounded-xl bg-(--btn-regular-bg) text-(--primary) flex items-center justify-center">
-        <Icon is:inline name="material-symbols:bookmarks-outline-rounded" class="text-2xl" />
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 rounded-lg bg-(--btn-regular-bg) text-(--primary) flex items-center justify-center">
+        <Icon is:inline name="material-symbols:topic-outline-rounded" class="text-2xl" />
       </div>
-      <h1 class="text-2xl font-bold text-90">专题</h1>
+      <h1 class="text-2xl font-bold text-90">专题文章</h1>
     </div>
     <p class="text-50 leading-7">
-      按主题组织系列文章与项目内容。文章仍然保留在首页与时间轴中，无需重复维护。
+      将系列文章与项目按主题聚合，便于持续学习、系统整理和集中查阅。
     </p>
   </section>
 
@@ -57,51 +47,33 @@ const topics = allTopics
     {topics.map(({ topic, posts, latestDate }, index) => (
       <a
         href={`/topics/${topic.id}/`}
-        class="topic-card card-base overflow-hidden flex flex-col md:flex-row group onload-animation"
+        class="topic-card card-base px-6 py-5 md:px-7 md:py-6 group onload-animation"
         style={`animation-delay: calc(var(--content-delay) + ${index * 50}ms);`}
       >
-        {topic.data.image ? (
-          <ImageWrapper
-            src={topic.data.image}
-            basePath={getFileDirFromPath(topic.filePath || "")}
-            alt={`${topic.data.title} 专题封面`}
-            class="topic-cover w-full md:w-60 aspect-2/1 md:aspect-auto md:min-h-40 shrink-0"
-            width={720}
-            sizes="(max-width: 767px) 100vw, 240px"
-            loading={index === 0 ? "eager" : "lazy"}
-            fadeIn={false}
-            showLqip={false}
-          />
-        ) : (
-          <div class="w-full md:w-60 min-h-36 md:min-h-40 shrink-0 bg-(--btn-regular-bg) text-(--primary) flex items-center justify-center">
-            <Icon is:inline name="material-symbols:library-books-outline-rounded" class="text-5xl" />
-          </div>
-        )}
-
-        <div class="p-5 md:p-6 flex-1 min-w-0 flex flex-col justify-center">
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <span class="px-2.5 py-1 rounded-md bg-(--btn-regular-bg) text-(--primary) text-xs font-medium">
-              {kindLabels[topic.data.kind]}
-            </span>
-            <span class="px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/10 text-50 text-xs font-medium">
-              {statusLabels[topic.data.status]}
-            </span>
+        <div class="flex items-start gap-4">
+          <div class="shrink-0 w-10 h-10 rounded-lg bg-(--btn-regular-bg) text-(--primary) flex items-center justify-center mt-0.5">
+            <Icon is:inline name="material-symbols:deployed-code-outline-rounded" class="text-2xl" />
           </div>
 
-          <h2 class="text-xl font-bold text-90 group-hover:text-(--primary) transition-colors mb-2">
-            {topic.data.title}
-          </h2>
-          <p class="text-50 leading-6 line-clamp-2 mb-4">{topic.data.description}</p>
+          <div class="flex-1 min-w-0">
+            <h2 class="text-lg md:text-xl font-bold text-90 group-hover:text-(--primary) transition-colors mb-2">
+              {topic.data.title}
+            </h2>
+            <p class="text-50 leading-6 mb-3">{topic.data.description}</p>
 
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-30">
-            <span class="inline-flex items-center gap-1.5">
-              <Icon is:inline name="material-symbols:article-outline-rounded" class="text-lg" />
-              {posts.length} 篇内容
-            </span>
-            <span class="inline-flex items-center gap-1.5">
-              <Icon is:inline name="material-symbols:update-rounded" class="text-lg" />
-              {formatDateToYYYYMMDD(latestDate)}
-            </span>
+            <div class="text-sm text-30 flex flex-wrap items-center gap-x-4 gap-y-1">
+              {posts.length > 0 ? (
+                <>
+                  <span class="inline-flex items-center gap-1.5">
+                    <Icon is:inline name="material-symbols:article-outline-rounded" class="text-base" />
+                    {posts.length} 篇文章
+                  </span>
+                  <span>更新于 {formatDateToYYYYMMDD(latestDate)}</span>
+                </>
+              ) : (
+                <span>内容筹备中</span>
+              )}
+            </div>
           </div>
         </div>
       </a>
@@ -110,7 +82,7 @@ const topics = allTopics
 
   {topics.length === 0 && (
     <section class="card-base px-8 py-12 text-center">
-      <Icon is:inline name="material-symbols:bookmarks-outline-rounded" class="text-5xl text-30 mx-auto mb-4" />
+      <Icon is:inline name="material-symbols:topic-outline-rounded" class="text-5xl text-30 mx-auto mb-4" />
       <p class="font-bold text-75 mb-2">暂无专题</p>
       <p class="text-sm text-50">创建第一个专题后，它会显示在这里。</p>
     </section>
@@ -118,15 +90,11 @@ const topics = allTopics
 </MainGridLayout>
 
 <style>
+  .topic-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
   .topic-card:hover {
     transform: translateY(-2px);
-  }
-
-  .topic-cover :global(img) {
-    transition: transform 0.35s ease;
-  }
-
-  .topic-card:hover .topic-cover :global(img) {
-    transform: scale(1.025);
   }
 </style>

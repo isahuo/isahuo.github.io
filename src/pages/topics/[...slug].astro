@@ -1,13 +1,12 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { getCollection, render } from "astro:content";
+import { getCollection } from "astro:content";
 import { Icon } from "astro-icon/components";
-import ImageWrapper from "@/components/common/ImageWrapper.astro";
 import PostPage from "@/components/layout/PostPage.astro";
+import { profileConfig } from "@/config";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@/utils/content-utils";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
-import { getFileDirFromPath } from "@/utils/url-utils";
 
 export async function getStaticPaths() {
 	const topics = await getCollection("topics", ({ data }) => !data.draft);
@@ -22,7 +21,6 @@ interface Props {
 }
 
 const { topic } = Astro.props as Props;
-const { Content } = await render(topic);
 const allPosts = await getSortedPosts();
 const topicPosts = allPosts
 	.filter((post) => post.data.topics.includes(topic.id))
@@ -36,84 +34,63 @@ const topicPosts = allPosts
 		);
 	});
 
+const latestDate =
+	topicPosts[0]?.data.updated ||
+	topicPosts[0]?.data.published ||
+	topic.data.updated ||
+	topic.data.published;
+
 const statusLabels = {
 	planned: "计划中",
-	ongoing: "进行中",
+	ongoing: "持续更新",
 	completed: "已完成",
 } as const;
-
-const kindLabels = {
-	series: "系列专题",
-	project: "项目专题",
-} as const;
-
-const hasIntroduction = Boolean(topic.body?.trim());
 ---
 
 <MainGridLayout
   title={topic.data.title}
   description={topic.data.description}
 >
-  <article class="card-base overflow-hidden mb-4">
-    {topic.data.image && (
-      <ImageWrapper
-        src={topic.data.image}
-        basePath={getFileDirFromPath(topic.filePath || "")}
-        alt={`${topic.data.title} 专题封面`}
-        class="w-full aspect-2/1"
-        width={1200}
-        sizes="(max-width: 768px) 100vw, 720px"
-        loading="eager"
-        fadeIn={false}
-        showLqip={false}
-      />
-    )}
-
-    <div class="px-6 md:px-8 py-6">
-      <div class="flex flex-wrap items-center gap-2 mb-3">
-        <a href="/topics/" class="text-sm text-(--primary) hover:underline inline-flex items-center gap-1">
-          <Icon is:inline name="material-symbols:arrow-back-rounded" />
-          全部专题
-        </a>
-        <span class="text-30">/</span>
-        <span class="px-2.5 py-1 rounded-md bg-(--btn-regular-bg) text-(--primary) text-xs font-medium">
-          {kindLabels[topic.data.kind]}
-        </span>
-        <span class="px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/10 text-50 text-xs font-medium">
-          {statusLabels[topic.data.status]}
-        </span>
+  <section class="card-base px-6 md:px-8 py-6 mb-4">
+    <div class="flex items-start gap-4">
+      <div class="shrink-0 w-11 h-11 rounded-lg bg-(--btn-regular-bg) text-(--primary) flex items-center justify-center mt-0.5">
+        <Icon is:inline name="material-symbols:deployed-code-outline-rounded" class="text-2xl" />
       </div>
 
-      <h1 class="text-2xl md:text-3xl font-bold text-90 mb-3">{topic.data.title}</h1>
-      <p class="text-50 leading-7 mb-4">{topic.data.description}</p>
-
-      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-30">
-        <span class="inline-flex items-center gap-1.5">
-          <Icon is:inline name="material-symbols:article-outline-rounded" class="text-lg" />
-          {topicPosts.length} 篇内容
-        </span>
-        <span class="inline-flex items-center gap-1.5">
-          <Icon is:inline name="material-symbols:calendar-month-outline-rounded" class="text-lg" />
-          创建于 {formatDateToYYYYMMDD(topic.data.published)}
-        </span>
-      </div>
-
-      {hasIntroduction && (
-        <div class="border-(--line-divider) border-dashed border-t mt-5 pt-5">
-          <div class="markdown-content topic-introduction">
-            <Content />
-          </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <h1 class="text-2xl md:text-3xl font-bold text-90">{topic.data.title}</h1>
+          <span class="px-2 py-0.5 rounded-md bg-(--btn-regular-bg) text-(--primary) text-xs font-medium">
+            {statusLabels[topic.data.status]}
+          </span>
         </div>
-      )}
+
+        <p class="text-50 leading-7 mb-4">{topic.data.description}</p>
+
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-30">
+          <span class="inline-flex items-center gap-1.5">
+            <Icon is:inline name="material-symbols:person-outline-rounded" class="text-base" />
+            作者：{profileConfig.name}
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <Icon is:inline name="material-symbols:article-outline-rounded" class="text-base" />
+            共 {topicPosts.length} 篇文章
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <Icon is:inline name="material-symbols:update-rounded" class="text-base" />
+            最后更新：{formatDateToYYYYMMDD(latestDate)}
+          </span>
+        </div>
+      </div>
     </div>
-  </article>
+  </section>
 
   <div class="flex items-center justify-between gap-3 mb-3 px-1">
     <h2 class="text-xl font-bold text-90 inline-flex items-center gap-2">
       <Icon is:inline name="material-symbols:grid-view-rounded" class="text-(--primary)" />
-      专题内容
+      专题文章
     </h2>
-    <span class="text-sm text-30">按专题顺序排列</span>
+    {topicPosts.length > 0 && <span class="text-sm text-30">按专题顺序排列</span>}
   </div>
 
   {topicPosts.length > 0 ? (
@@ -126,9 +103,3 @@ const hasIntroduction = Boolean(topic.body?.trim());
     </section>
   )}
 </MainGridLayout>
-
-<style>
-  .topic-introduction :global(p:last-child) {
-    margin-bottom: 0;
-  }
-</style>

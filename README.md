@@ -44,7 +44,7 @@ src/content/topics/_template.md
 然后在已有文章的 Frontmatter 中填写专题文件名（不含 `.md`）：
 
 ```yaml
-topics: [agent-tool-use]
+topics: [agent-engineering]
 topicOrder: 1
 ```
 

@@ -32,7 +32,6 @@ type PostData = {
 type TopicData = {
 	title: string;
 	description: string;
-	image: string;
 	published: Date;
 	updated?: Date;
 	draft: boolean;
@@ -94,7 +93,6 @@ const topicsCollection: ContentCollection<TopicData> = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string().optional().default(""),
-		image: z.string().optional().default(""),
 		published: z.date(),
 		updated: z.date().optional(),
 		draft: z.boolean().optional().default(false),
