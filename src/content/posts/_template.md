@@ -5,6 +5,11 @@ description: "用一两句话概括这篇文章。"
 image: ""
 tags: [Astro, 学习记录]
 category: 技术博客
+# 可选：填写专题文件名（不含 .md）；不属于专题时保持空数组
+# 同一专题中的文章可用 topicOrder 控制先后顺序
+# topics: [agent-tool-use]
+topics: []
+topicOrder: 0
 draft: true
 pinned: false
 comment: false

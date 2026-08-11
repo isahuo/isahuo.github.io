@@ -5,6 +5,8 @@ description: "梳理 Function Calling、MCP、CLI 与 Skills 在 Agent 工具调
 image: "./function-calling-mcp-cli/cover.webp"
 tags: [Function Calling, MCP, CLI, Skills, Tool Use]
 category: "AI Agent"
+topics: [agent-tool-use]
+topicOrder: 1
 draft: false
 pinned: false
 comment: false

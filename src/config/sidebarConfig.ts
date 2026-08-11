@@ -49,17 +49,6 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			showOnPostPage: false,
 		},
 		{
-			type: "siteInfo",
-			enable: true,
-			position: "top",
-			showOnPostPage: true,
-			specificConfig: {
-				siteInfo: {
-					unknownBuildPlatform: "GitHub Pages",
-				},
-			},
-		},
-		{
 			type: "calendar",
 			enable: true,
 			showTitle: false,
@@ -110,16 +99,6 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			type: "stats",
 			enable: true,
 			showOnPostPage: true,
-		},
-		{
-			type: "siteInfo",
-			enable: true,
-			showOnPostPage: true,
-			specificConfig: {
-				siteInfo: {
-					unknownBuildPlatform: "GitHub Pages",
-				},
-			},
 		},
 	],
 };

@@ -12,6 +12,8 @@ type PostData = {
 	image: string;
 	tags: string[];
 	category: string | null;
+	topics: string[];
+	topicOrder: number;
 	lang: string;
 	pinned: boolean;
 	author: string;
@@ -25,6 +27,18 @@ type PostData = {
 	prevSlug: string;
 	nextTitle: string;
 	nextSlug: string;
+};
+
+type TopicData = {
+	title: string;
+	description: string;
+	image: string;
+	published: Date;
+	updated?: Date;
+	draft: boolean;
+	kind: "series" | "project";
+	status: "ongoing" | "completed" | "planned";
+	order: number;
 };
 
 type DynamicData = {
@@ -49,6 +63,8 @@ const postsCollection: ContentCollection<PostData> = defineCollection({
 		image: z.string().optional().default(""),
 		tags: z.array(z.string()).optional().default([]),
 		category: z.string().optional().nullable().default(""),
+		topics: z.array(z.string()).optional().default([]),
+		topicOrder: z.number().optional().default(0),
 		lang: z.string().optional().default(""),
 		pinned: z.boolean().optional().default(false),
 		author: z.string().optional().default(""),
@@ -73,6 +89,24 @@ const specCollection: ContentCollection<Record<string, never>> =
 		schema: z.object({}),
 	});
 
+const topicsCollection: ContentCollection<TopicData> = defineCollection({
+	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/topics" }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string().optional().default(""),
+		image: z.string().optional().default(""),
+		published: z.date(),
+		updated: z.date().optional(),
+		draft: z.boolean().optional().default(false),
+		kind: z.enum(["series", "project"]).optional().default("series"),
+		status: z
+			.enum(["ongoing", "completed", "planned"])
+			.optional()
+			.default("ongoing"),
+		order: z.number().optional().default(0),
+	}),
+});
+
 const dynamicCollection: ContentCollection<DynamicData> = defineCollection({
 	loader: glob({ pattern: "**/*.md", base: "./src/content/dynamic" }),
 	schema: z.object({
@@ -86,8 +120,10 @@ export const collections: {
 	dynamic: typeof dynamicCollection;
 	posts: typeof postsCollection;
 	spec: typeof specCollection;
+	topics: typeof topicsCollection;
 } = {
 	dynamic: dynamicCollection,
 	posts: postsCollection,
 	spec: specCollection,
+	topics: topicsCollection,
 };

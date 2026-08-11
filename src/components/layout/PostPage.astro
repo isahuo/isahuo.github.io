@@ -5,7 +5,10 @@ import { Icon } from "astro-icon/components";
 import PostCard from "@/components/layout/PostCard.astro";
 import { siteConfig } from "@/config";
 
-const { page } = Astro.props;
+const { page, fixedLayout } = Astro.props as {
+	page: { data: CollectionEntry<"posts">[] };
+	fixedLayout?: "list" | "grid";
+};
 const isEmpty = page.data.length === 0;
 
 let delay = 0;
@@ -18,9 +21,10 @@ const masonryEnabled = siteConfig.postListLayout.grid.masonry;
 const columnWidth = siteConfig.postListLayout.grid.columnWidth || 280;
 
 // 根据配置设置初始布局模式，避免闪烁
-const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
+const defaultLayout =
+	fixedLayout || siteConfig.postListLayout.defaultMode || "list";
 const mobileDefaultLayout =
-	siteConfig.postListLayout.mobileDefaultMode || defaultLayout;
+	fixedLayout || siteConfig.postListLayout.mobileDefaultMode || defaultLayout;
 const initialLayoutClass =
 	defaultLayout === "grid"
 		? "post-grid-auto grid-mode"
@@ -36,6 +40,7 @@ const coverPositionClass =
   class={`transition-all duration-500 ease-in-out mb-4 ${initialLayoutClass}${coverPositionClass}`}
   data-default-layout={defaultLayout}
   data-mobile-default-layout={mobileDefaultLayout}
+  data-fixed-layout={fixedLayout}
   data-masonry-enabled={masonryEnabled}
   data-column-width={columnWidth}
   style={`--post-card-min-width: ${columnWidth}px;`}
@@ -80,13 +85,13 @@ const coverPositionClass =
 </div>
 
 <!-- 立即执行脚本：防止刷新时的布局闪烁 -->
-<script is:inline define:vars={{ defaultLayout, mobileDefaultLayout, columnWidth }}>
+<script is:inline define:vars={{ defaultLayout, mobileDefaultLayout, fixedLayout, columnWidth }}>
   (function() {
     const savedLayout = localStorage.getItem('postListLayout');
-    // 根据视口宽度确定有效的默认布局
+    // 根据视口宽度确定有效的默认布局；专题详情页可固定为网格模式
     const effectiveDefault = window.innerWidth < 780 ? mobileDefaultLayout : defaultLayout;
-    // 低于380px强制网格模式
-    const effectiveLayout = window.innerWidth < 380 ? 'grid' : (savedLayout || effectiveDefault);
+    // 低于380px或页面指定固定布局时优先使用网格/固定模式
+    const effectiveLayout = fixedLayout || (window.innerWidth < 380 ? 'grid' : (savedLayout || effectiveDefault));
 
     if (effectiveLayout !== defaultLayout) {
       const container = document.getElementById('post-list-container');
@@ -124,10 +129,11 @@ const coverPositionClass =
       postListContainer.getAttribute("data-default-layout") || "list";
     const mobileDefaultLayout =
       postListContainer.getAttribute("data-mobile-default-layout") || defaultLayout;
+    const fixedLayout = postListContainer.getAttribute("data-fixed-layout");
 
-    // 根据视口宽度确定有效的默认布局
+    // 根据视口宽度确定有效的默认布局，专题详情页始终使用指定布局
     const effectiveDefault = window.innerWidth < 780 ? mobileDefaultLayout : defaultLayout;
-    let currentLayout = savedLayout || effectiveDefault;
+    let currentLayout = fixedLayout || savedLayout || effectiveDefault;
 
     // 低于380px强制网格模式
     if (window.innerWidth < 380) {
@@ -141,6 +147,12 @@ const coverPositionClass =
   function updatePostListLayout(layout: string) {
     const postListContainer = document.getElementById("post-list-container");
     if (!postListContainer) return;
+
+    // 专题详情等固定布局页面不响应全局布局切换
+    const fixedLayout = postListContainer.getAttribute("data-fixed-layout");
+    if (fixedLayout === "grid" || fixedLayout === "list") {
+      layout = fixedLayout;
+    }
 
     // Check current layout state
     const isCurrentGrid = postListContainer.classList.contains("grid-mode");

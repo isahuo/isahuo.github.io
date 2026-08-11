@@ -1,0 +1,134 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
+import { Icon } from "astro-icon/components";
+import ImageWrapper from "@/components/common/ImageWrapper.astro";
+import PostPage from "@/components/layout/PostPage.astro";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { getSortedPosts } from "@/utils/content-utils";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { getFileDirFromPath } from "@/utils/url-utils";
+
+export async function getStaticPaths() {
+	const topics = await getCollection("topics", ({ data }) => !data.draft);
+	return topics.map((topic) => ({
+		params: { slug: topic.id },
+		props: { topic },
+	}));
+}
+
+interface Props {
+	topic: CollectionEntry<"topics">;
+}
+
+const { topic } = Astro.props as Props;
+const { Content } = await render(topic);
+const allPosts = await getSortedPosts();
+const topicPosts = allPosts
+	.filter((post) => post.data.topics.includes(topic.id))
+	.sort((a, b) => {
+		const orderA =
+			a.data.topicOrder > 0 ? a.data.topicOrder : Number.MAX_SAFE_INTEGER;
+		const orderB =
+			b.data.topicOrder > 0 ? b.data.topicOrder : Number.MAX_SAFE_INTEGER;
+		return (
+			orderA - orderB || b.data.published.getTime() - a.data.published.getTime()
+		);
+	});
+
+const statusLabels = {
+	planned: "计划中",
+	ongoing: "进行中",
+	completed: "已完成",
+} as const;
+
+const kindLabels = {
+	series: "系列专题",
+	project: "项目专题",
+} as const;
+
+const hasIntroduction = Boolean(topic.body?.trim());
+---
+
+<MainGridLayout
+  title={topic.data.title}
+  description={topic.data.description}
+>
+  <article class="card-base overflow-hidden mb-4">
+    {topic.data.image && (
+      <ImageWrapper
+        src={topic.data.image}
+        basePath={getFileDirFromPath(topic.filePath || "")}
+        alt={`${topic.data.title} 专题封面`}
+        class="w-full aspect-2/1"
+        width={1200}
+        sizes="(max-width: 768px) 100vw, 720px"
+        loading="eager"
+        fadeIn={false}
+        showLqip={false}
+      />
+    )}
+
+    <div class="px-6 md:px-8 py-6">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <a href="/topics/" class="text-sm text-(--primary) hover:underline inline-flex items-center gap-1">
+          <Icon is:inline name="material-symbols:arrow-back-rounded" />
+          全部专题
+        </a>
+        <span class="text-30">/</span>
+        <span class="px-2.5 py-1 rounded-md bg-(--btn-regular-bg) text-(--primary) text-xs font-medium">
+          {kindLabels[topic.data.kind]}
+        </span>
+        <span class="px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/10 text-50 text-xs font-medium">
+          {statusLabels[topic.data.status]}
+        </span>
+      </div>
+
+      <h1 class="text-2xl md:text-3xl font-bold text-90 mb-3">{topic.data.title}</h1>
+      <p class="text-50 leading-7 mb-4">{topic.data.description}</p>
+
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-30">
+        <span class="inline-flex items-center gap-1.5">
+          <Icon is:inline name="material-symbols:article-outline-rounded" class="text-lg" />
+          {topicPosts.length} 篇内容
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <Icon is:inline name="material-symbols:calendar-month-outline-rounded" class="text-lg" />
+          创建于 {formatDateToYYYYMMDD(topic.data.published)}
+        </span>
+      </div>
+
+      {hasIntroduction && (
+        <div class="border-(--line-divider) border-dashed border-t mt-5 pt-5">
+          <div class="markdown-content topic-introduction">
+            <Content />
+          </div>
+        </div>
+      )}
+    </div>
+  </article>
+
+  <div class="flex items-center justify-between gap-3 mb-3 px-1">
+    <h2 class="text-xl font-bold text-90 inline-flex items-center gap-2">
+      <Icon is:inline name="material-symbols:grid-view-rounded" class="text-(--primary)" />
+      专题内容
+    </h2>
+    <span class="text-sm text-30">按专题顺序排列</span>
+  </div>
+
+  {topicPosts.length > 0 ? (
+    <PostPage page={{ data: topicPosts }} fixedLayout="grid" />
+  ) : (
+    <section class="card-base px-8 py-12 text-center mb-4">
+      <Icon is:inline name="material-symbols:post-add-rounded" class="text-5xl text-30 mx-auto mb-4" />
+      <p class="font-bold text-75 mb-2">专题内容正在整理</p>
+      <p class="text-sm text-50">为文章填写该专题 ID 后，它会自动出现在这里。</p>
+    </section>
+  )}
+</MainGridLayout>
+
+<style>
+  .topic-introduction :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

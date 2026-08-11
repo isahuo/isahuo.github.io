@@ -28,9 +28,27 @@ src/config/siteConfig.ts       网站标题、网址和基础设置
 src/config/profileConfig.ts    姓名、头像和联系方式
 src/config/navBarConfig.ts     顶部导航
 src/content/posts/             Markdown 博客文章
+src/content/topics/            专题定义与专题模板
 src/content/spec/about.md      关于我
 src/pages/archive.astro        按发布日期生成的文章时间轴
 ```
+
+## 专题
+
+专题只负责组织文章，不会复制正文。新建专题时复制：
+
+```text
+src/content/topics/_template.md
+```
+
+然后在已有文章的 Frontmatter 中填写专题文件名（不含 `.md`）：
+
+```yaml
+topics: [agent-tool-use]
+topicOrder: 1
+```
+
+文章仍会显示在首页、归档、分类和标签中，同时也会进入对应专题。
 
 ## 构建
 

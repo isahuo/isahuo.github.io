@@ -34,6 +34,11 @@ export const navBarConfig: NavBarConfig = {
 			],
 		},
 		{
+			name: "专题",
+			url: "/topics/",
+			icon: "material-symbols:bookmarks-outline-rounded",
+		},
+		{
 			name: "关于我",
 			url: "/about/",
 			icon: "material-symbols:person-outline-rounded",
